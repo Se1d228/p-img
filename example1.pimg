@@ -1,16 +1,17 @@
 --CONFIG-START--
 t=g
 sizex=6
-sizey=6
-wsizex=300
-wsizey=300
+sizey=7
 --CONFIG-END--
 
 ---IMAGE-START--
-1=[rgba(0, 0, 0, 255), 6]
-2=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-3=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-4=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-5=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-6=[rgba(0, 0, 0, 255), 6]
+1=[rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)]
+2=[rgb(0,0,0)] + [rgb(255,255,255)]*4 + [rgb(0,0,0)]
+3=[rgb(0,0,0)] + [rgb(255,255,255)]*4 + [rgb(0,0,0)]
+4=[rgb(0,0,0)] + [rgb(255,255,255)]*4 + [rgb(0,0,0)]
+5=[rgb(0,0,0)] + [rgb(255,255,255)]*4 + [rgb(0,0,0)]
+6=[rgb(0,0,0)] + [rgb(0,255,255)]*4 + [rgb(0,0,0)]
+7=[rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)] + [rgb(255,0,0)]
 --IMAGE-END--
+
+I can type anything outside of config and image. Remember: you must fill first and last lines manually, repeats are not working there

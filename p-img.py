@@ -1,200 +1,163 @@
-import sys
 import argparse
 import re
-from PyQt5 import QtWidgets, QtGui, QtCore
-from colorama import Fore, Style, init
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem
+from PyQt5.QtGui import QColor
+# Removed unused import of Qt
+from colorama import Fore, init
 
-# Инициализация colorama (для Windows)
 init(autoreset=True)
 
-# Обработка аргументов командной строки
-parser = argparse.ArgumentParser()
-parser.add_argument("-f", "--filename", help="File name to open", required=True)
-args = parser.parse_args()
+class PImgParser:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.config = {}
+        self.image = []
+        self._validate_and_parse()
 
-def parse_config(file_path):
-    """
-    Считывает файл конфигурации, разбивая его на глобальный блок (между --CONFIG-START-- и --CONFIG-END--)
-    и блок IMAGE (между ---IMAGE-START-- и --IMAGE-END--). Для IMAGE каждая строка вида:
-      <row>=[<color>[, multiplier]]+...[<color>[, multiplier]]
-    Например:
-      1=[BLACK, 6]
-      2=[BLACK]+[WHITE, 4]+[BLACK]
-    """
-    global_conf = {}
-    image_conf = {}
-    inside_config = False
-    inside_image = False
+    def _validate_and_parse(self):
+        try:
+            with open(self.filepath, 'r') as file:
+                content = file.read()
+        except FileNotFoundError:
+            raise ValueError(f"File not found: {self.filepath}")
 
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line == "--CONFIG-START--":
-                inside_config = True
-                continue
-            if line == "--CONFIG-END--":
-                inside_config = False
-                continue
-            if line == "---IMAGE-START--":
-                inside_image = True
-                continue
-            if line == "--IMAGE-END--":
-                inside_image = False
-                continue
+        if '--CONFIG-START--' not in content or '--CONFIG-END--' not in content or \
+           '--IMAGE-START--' not in content or '--IMAGE-END--' not in content:
+            raise ValueError("This is not a valid ProgImage file")
 
-            if inside_config and "=" in line:
-                key, value = line.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                # Если значение состоит только из цифр, преобразуем в число
-                if value.isdigit():
-                    value = int(value)
-                # Если в значении есть кавычки, убираем их
-                elif (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
-                    value = value[1:-1]
-                global_conf[key] = value
+        config_section = re.search(r'--CONFIG-START--(.*?)--CONFIG-END--', content, re.DOTALL)
+        image_section = re.search(r'--IMAGE-START--(.*?)--IMAGE-END--', content, re.DOTALL)
 
-            if inside_image and "=" in line:
-                # Формат: <row>=<segment1>+<segment2>+...
-                row_str, segments_str = line.split("=", 1)
-                try:
-                    row = int(row_str.strip())
-                except ValueError:
-                    continue
-                # Ищем сегменты вида +[ ... ]
-                segments = re.findall(r"\+\[([^\]]+)\]", segments_str)
-                parsed_segments = []
-                for seg in segments:
-                    parts = seg.split(",")
-                    color_str = parts[0].strip()
-                    multiplier = 1.0
-                    if len(parts) > 1:
-                        try:
-                            multiplier = float(parts[1].strip())
-                        except ValueError:
-                            multiplier = 1.0
-                    parsed_segments.append({"color": color_str, "multiplier": multiplier})
-                image_conf[row] = parsed_segments
+        if not config_section or not image_section:
+            raise ValueError("Invalid ProgImage file structure")
 
-    return global_conf, image_conf
+        self._parse_config(config_section.group(1))
+        self._parse_image(image_section.group(1))
 
-def parse_rgba(color_str):
-    """
-    Парсит строку вида rgba(0, 0, 0, 255) и возвращает кортеж (R, G, B, A).
-    Используется для GUI режима.
-    """
-    m = re.match(r"rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\)", color_str)
-    if m:
-        return tuple(map(int, m.groups()))
-    return (0, 0, 0, 255)
+    def _parse_config(self, config_text):
+        for line in config_text.strip().splitlines():
+            key, value = line.split('=')
+            try:
+                self.config[key.strip()] = int(value.strip()) if value.strip().isdigit() else value.strip()
+            except ValueError:
+                raise ValueError(f"Invalid config value: {value.strip()}")
 
-def print_image_cli(image_conf, mode="c"):
-    """
-    Выводит изображение в терминале (CLI) в новом или старом стиле.
-    Новый формат конфигурации: цвета задаются именами (например, BLACK, WHITE) и множитель задаётся через запятую.
-    mode: "c" или "c_o"
-    """
-    # Словарь соответствия имён цветов ANSI (используем colorama.Fore)
-    color_map = {
-        "BLACK": Fore.BLACK,
-        "WHITE": Fore.WHITE,
-        "RED": Fore.RED,
-        "GREEN": Fore.GREEN,
-        "BLUE": Fore.BLUE,
-        "YELLOW": Fore.YELLOW,
-        "CYAN": Fore.CYAN,
-        "MAGENTA": Fore.MAGENTA,
-        "LIGHTBLACK": Fore.LIGHTBLACK_EX,
-        "LIGHTRED": Fore.LIGHTRED_EX,
-        "LIGHTGREEN": Fore.LIGHTGREEN_EX,
-        "LIGHTYELLOW": Fore.LIGHTYELLOW_EX,
-        "LIGHTBLUE": Fore.LIGHTBLUE_EX,
-        "LIGHTCYAN": Fore.LIGHTCYAN_EX,
-        "LIGHTMAGENTA": Fore.LIGHTMAGENTA_EX,
-        "LIGHTWHITE": Fore.LIGHTWHITE_EX,
-    }
-    # Выбираем символ для отрисовки в зависимости от режима
-    block_char = "█" if mode == "c" else "#"
+    def _parse_image(self, image_text):
+        for line in image_text.strip().splitlines():
+            match = re.match(r'\d+=\[(.+)\]', line)
+            if match:
+                row = []
+                for part in match.group(1).split('+'):
+                    part = part.strip()
+                    rgb_match = re.match(r'rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)', part)
+                    if rgb_match:
+                        color = tuple(int(x) for x in rgb_match.groups())
+                        row.append(color)
+                    else:
+                        repeat_match = re.match(r'\[rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)(?:\]\*(\d+))?', part)
+                        if repeat_match:
+                            try:
+                                groups = repeat_match.groups()
+                                r, g, b = map(int, groups[:3])
+                                repeat = int(groups[3]) if groups[3] else 1
+                                color = (r, g, b)
+                                row.extend([color] * repeat)
+                            except (ValueError, TypeError):
+                                raise ValueError(f"Invalid color or repeat value in image part: {part}")
+                        else:
+                            raise ValueError(f"Invalid image part format: {part}")
+                self.image.append(row)
 
-    # Для каждого ряда, сортируя по номеру
-    for row in sorted(image_conf.keys()):
-        line = ""
-        for seg in image_conf[row]:
-            col_name = seg["color"].upper()
-            ansi_color = color_map.get(col_name, Fore.RESET)
-            multiplier = seg["multiplier"]
-            # Для CLI увеличиваем ширину символов (умножаем количество символов на int(multiplier * 2))
-            line += ansi_color + (block_char * int(multiplier * 2))
-        print(line + Style.RESET_ALL)
+    def get_config(self):
+        return self.config
 
-class ImageWidget(QtWidgets.QWidget):
-    def __init__(self, global_conf, image_conf):
+    def get_image(self):
+        return self.image
+
+
+class CLIViewer:
+    def __init__(self, image):
+        self.image = image
+
+    def display(self):
+        for row in self.image:
+            print(''.join(self._color_to_fore(color) for color in row))
+
+    def _color_to_fore(self, color):
+        if isinstance(color, str):
+            color_map = {
+                "BLACK": Fore.BLACK,
+                "RED": Fore.RED,
+                "GREEN": Fore.GREEN,
+                "YELLOW": Fore.YELLOW,
+                "BLUE": Fore.BLUE,
+                "MAGENTA": Fore.MAGENTA,
+                "CYAN": Fore.CYAN,
+                "WHITE": Fore.WHITE,
+            }
+            return color_map.get(color.upper(), Fore.RESET) + '█'
+        elif isinstance(color, tuple):
+            return Fore.RESET + '█'
+        return Fore.RESET + ' '
+
+
+class GUIViewer(QMainWindow):
+    def __init__(self, config, image):
         super().__init__()
-        self.global_conf = global_conf
-        self.image_conf = image_conf
-        self.setWindowTitle("Programmable-Image Viewer")
-        wsizex = self.global_conf.get("wsizex", 300)
-        wsizey = self.global_conf.get("wsizey", 300)
-        self.resize(wsizex, wsizey)
+        self.config = config
+        self.image = image
+        self.init_ui()
 
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        win_w, win_h = self.width(), self.height()
-        sizex = self.global_conf.get("sizex", 6)
-        sizey = self.global_conf.get("sizey", 6)
-        # Размер ячейки для отрисовки
-        cell_w = win_w / sizex
-        cell_h = win_h / sizey
+    def init_ui(self):
+        self.setWindowTitle("ProgImage Viewer")
+        self.scene = QGraphicsScene()
+        self.view = QGraphicsView(self.scene, self)
+        self.setCentralWidget(self.view)
+        self.resize(600, 600)
 
-        # Рисуем по рядам (номер ряда начинается с 1)
-        for row in sorted(self.image_conf.keys()):
-            y = (row - 1) * cell_h
-            x = 0
-            for seg in self.image_conf[row]:
-                # Для GUI ожидается, что цвет задаётся либо как rgba(...), либо как имя.
-                col_str = seg["color"]
-                if col_str.upper() in ["BLACK", "WHITE", "RED", "GREEN", "BLUE", "YELLOW", "CYAN", "MAGENTA"]:
-                    # Используем простое соответствие (опционально можно расширить)
-                    color_names = {
-                        "BLACK": (0, 0, 0, 255),
-                        "WHITE": (255, 255, 255, 255),
-                        "RED": (255, 0, 0, 255),
-                        "GREEN": (0, 255, 0, 255),
-                        "BLUE": (0, 0, 255, 255),
-                        "YELLOW": (255, 255, 0, 255),
-                        "CYAN": (0, 255, 255, 255),
-                        "MAGENTA": (255, 0, 255, 255)
-                    }
-                    rgba = color_names.get(col_str.upper(), (0, 0, 0, 255))
-                else:
-                    rgba = parse_rgba(col_str)
-                qt_color = QtGui.QColor(*rgba[:3])
-                painter.setBrush(qt_color)
-                painter.setPen(QtCore.Qt.NoPen)
-                pix_w = cell_w * seg["multiplier"]
-                painter.drawRect(int(x), int(y), int(pix_w), int(cell_h))
-                x += pix_w
+        sizex, sizey = self.config['sizex'], self.config['sizey']
+        if sizex == 0 or sizey == 0:
+            raise ValueError("Config 'sizex' or 'sizey' cannot be zero")
+        pixsize_x = (self.width() / sizex) - 1
+        pixsize_y = (self.height() / sizey) - 1
+
+        for y, row in enumerate(self.image):
+            for x, color in enumerate(row):
+                rect = QGraphicsRectItem(x * pixsize_x, y * pixsize_y, pixsize_x, pixsize_y)
+                if isinstance(color, tuple):
+                    rect.setBrush(QColor(*color))
+                self.scene.addItem(rect)
+
 
 def main():
-    if not args.filename.endswith(".pimg"):
-        print(Fore.RED + "Error: Unsupported file format!" + Style.RESET_ALL)
+    parser = argparse.ArgumentParser(description="ProgImage Viewer")
+    parser.add_argument("file", help="Path to the .pimg file")
+    parser.add_argument("-c", "--console", action="store_true", help="Display image in console")
+    parser.add_argument("-f", "--force", action="store_true", help="Force accept other file formats")
+    args = parser.parse_args()
+
+    try:
+        pimg = PImgParser(args.file)
+    except ValueError as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
-    global_conf, image_conf = parse_config(args.filename)
+    config = pimg.get_config()
+    image = pimg.get_image()
 
-    t = global_conf.get("t")
-    # Режимы CLI: "c" и "c_o" (CLI и CLI-old)
-    if t in ("c", "c_o"):
-        print_image_cli(image_conf, mode=t)
-    # Режим GUI
-    elif t == "g":
-        app = QtWidgets.QApplication(sys.argv)
-        window = ImageWidget(global_conf, image_conf)
-        window.show()
+    if args.console or config.get('t') == 'c':
+        viewer = CLIViewer(image)
+        viewer.display()
+    elif config.get('t') == 'g':
+        app = QApplication(sys.argv)
+        viewer = GUIViewer(config, image)
+        viewer.show()
         sys.exit(app.exec_())
     else:
-        print(Fore.RED + "Error: Unknown mode. Use t='g' for GUI, 'c' for CLI, or 'c_o' for CLI-old." + Style.RESET_ALL)
+        print("Error: Unknown display type in config")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

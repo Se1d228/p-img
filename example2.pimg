@@ -1,16 +1,14 @@
 --CONFIG-START--
-t=g
+t="c"
 sizex=6
 sizey=6
-wsizex=300
-wsizey=300
 --CONFIG-END--
 
 ---IMAGE-START--
-1=[rgba(0, 0, 0, 255), 6]
-2=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-3=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-4=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-5=[rgba(0, 0, 0, 255)]+[rgba(255, 255, 255, 255), 4]+[rgba(0, 0, 0, 255)]
-6=[rgba(0, 0, 0, 255), 6]
+1=[BLACK]*6
+2=[BLACK] + [WHITE]*4 + [BLACK]
+3=[BLACK] + [WHITE]*4 + [BLACK]
+4=[BLACK] + [WHITE]*4 + [BLACK]
+5=[BLACK] + [WHITE]*4 + [BLACK]
+6=[BLACK]*6
 --IMAGE-END--
