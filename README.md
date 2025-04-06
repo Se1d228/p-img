@@ -28,7 +28,7 @@ ln ./p-img.sh /bin/p-img
 ```sh
 git clone https://github.com/Se1d228/p-img
 ```
-2. Remember your git clonned directory (I will bark it as ```/path/to/p-img``` and start edit ~/.bashrc file trough ```sudo vi ~/.bashrc``` or ```sudo nano ~/.bashrc``` and write following line to file:
+2. Remember your git clonned directory (I will bark it as ```/path/to/p-img```) and start edit ~/.bashrc file trough ```sudo vi ~/.bashrc``` or ```sudo nano ~/.bashrc``` and write following line to file:
 ```bash
 alias p-img="/path/to/p-img.sh"
 ```
