@@ -1,29 +1,29 @@
 # P-IMG project
-This is programmable images project
+## This is programmable images project
 ---
-## Usage:
+# Usage:
 Flags:
 -c; --cli - render image in console
 -f; --filename - filename
 # Example:
-Linux:
+## Linux:
 ```sh
 ./p-img.sh -f "example1.pimg"
 ```
-Windows:
+## Windows:
 ```ps
 ./p-img.bat -f "example1.pimg"
 ```
 ---
-## Installation:
-# Linux (/bin ln method):
+# Installation:
+## Linux (/bin ln method):
 Just type these 3 commands:
 ```sh
 git clone https://github.com/Se1d228/p-img
 cd p-img
 ln ./p-img.sh /bin/p-img
 ```
-# Linux (bash.bashrc method):
+## Linux (bash.bashrc method):
 1. Clone this repository:
 ```sh
 git clone https://github.com/Se1d228/p-img
@@ -32,7 +32,7 @@ git clone https://github.com/Se1d228/p-img
 ```bash
 alias p-img="/path/to/p-img.sh"
 ```
-# Windows:
+## Windows:
 1. type this in CMD:
 ```ps
 git clone git clone https://github.com/Se1d228/p-img
