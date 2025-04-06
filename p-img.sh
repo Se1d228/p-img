@@ -1,1 +1,3 @@
-python3 p-img.py "$@"
+#!/bin/sh
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+python3 "$SCRIPT_DIR/p-img.py" "$@"
