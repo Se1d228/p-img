@@ -1,1 +1,1 @@
-python3 pimg.py "$1" "$2"
+python3 p-img.py "$@"
