@@ -3,7 +3,6 @@ import re
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem
 from PyQt5.QtGui import QColor
-# Removed unused import of Qt
 from colorama import Fore, init
 
 init(autoreset=True)
