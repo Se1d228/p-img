@@ -110,6 +110,7 @@ class GUIViewer(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("ProgImage Viewer")
+        self.setWindowIcon(QIcon("logo.png"))
         self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene, self)
         self.setCentralWidget(self.view)
