@@ -25,6 +25,8 @@ sudo cp logo.png /bin/
 sudo ln -s /bin/p-img.sh /bin/p-img
 chmod +x /bin/p-img.sh
 ```
+## Linux (/usr/local/bin if /bin is RO):
+Do exactly same as in /bin method, but replace "/bin" with "/usr/local/bin"
 ## Linux (bash.bashrc method):
 1. Clone this repository:
 ```sh
