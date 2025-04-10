@@ -22,7 +22,8 @@ cd p-img
 sudo cp p-img.sh /bin/
 sudo cp p-img.py /bin/
 sudo cp logo.png /bin/
-sudo ln /bin/p-img.sh /bin/p-img
+sudo ln -s /bin/p-img.sh /bin/p-img
+chmod +x /bin/p-img.sh
 ```
 ## Linux (bash.bashrc method):
 1. Clone this repository:
