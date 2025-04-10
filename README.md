@@ -15,11 +15,14 @@ Flags:
 ```
 # Installation:
 ## Linux (/bin ln method):
-Just type these 3 commands:
+Just type these commands in order:
 ```sh
 git clone https://github.com/Se1d228/p-img
 cd p-img
-ln ./p-img.sh /bin/p-img
+sudo cp p-img.sh /bin/
+sudo cp p-img.py /bin/
+sudo cp logo.png /bin/
+sudo ln /bin/p-img.sh /bin/p-img
 ```
 ## Linux (bash.bashrc method):
 1. Clone this repository:
