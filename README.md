@@ -37,7 +37,7 @@ alias p-img="/path/to/p-img.sh"
 ## Windows:
 1. type this in CMD:
 ```ps
-git clone git clone https://github.com/Se1d228/p-img
+git clone https://github.com/Se1d228/p-img
 ```
 2. Create shortcut for p-img.bat. Name it "p-img"
 3. Put this shortcut in ```C:\Windows\System32```
