@@ -2,8 +2,12 @@ import argparse
 import re
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon
 from colorama import Fore, init
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+iconpath = os.path.join(script_dir, "p-img.logo.png")
 
 init(autoreset=True)
 
@@ -110,7 +114,7 @@ class GUIViewer(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("ProgImage Viewer")
-        self.setWindowIcon(QIcon("logo.png"))
+        self.setWindowIcon(QIcon(iconpath))
         self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene, self)
         self.setCentralWidget(self.view)
