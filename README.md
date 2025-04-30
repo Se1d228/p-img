@@ -13,6 +13,14 @@ Flags:
 ```ps
 ./p-img.bat -f "example1.pimg"
 ```
+# Prerequireties:
+- Python3
+- py3: PyQt5
+- py3: colorama
+- py3: os
+- py3: sys
+- py3: argparse
+- py3: re
 # Installation:
 ## Linux (/bin ln method):
 Just type these commands in order:
